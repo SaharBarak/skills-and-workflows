@@ -47,7 +47,7 @@ Server events on an `app` follow the same decision as the browser:
 
 - The consent module writes the visitor's answer, never the region default, into a first-party preference cookie: host-only, `Path=/`, `SameSite=Lax` (it has to reach the OAuth callback), and `Secure` on https. The server re-runs the browser's own gate on that answer plus the request's country and GPC or DNT headers, so a moved visitor or a newly sent signal is never stale.
 - A request without an answer carries no identity.
-- An event with no visitor request, such as a payment webhook, takes the answer recorded when the visitor started the action (pleiad and wessley carry it in the checkout session's metadata), or the account's stored answer (Beneath).
+- An event with no visitor request, such as a payment webhook, takes the answer recorded when the visitor started the action, or the account's stored answer. Wessley carries it in the Stripe Checkout Session's metadata; Beneath stores it on the account; pleiad has neither yet, so its billing webhook events are anonymous.
 - Allowed: identified, as before. Refused or unknown: sent anonymously, as posthog-js counts a refusal. That means a one-off id, `$process_person_profile: false`, no session or URL, and only properties on a per-event allowlist. A provider event id that only deduplicates retries is kept.
 
 ## Configuration
