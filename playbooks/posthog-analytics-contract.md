@@ -43,6 +43,13 @@ One project is one namespace for events, persons, flags, replay allowance and se
 
 On an `app`, the consent decision governs every non-essential tracker on that site, not only PostHog. A banner that controls one tracker while others load regardless is misleading. Beneath's `consent.ts` is the reference behaviour. PostHog's `on_reject` already holds capture while the visitor is undecided, so a repo adds its own queue only for business events that must survive the decision.
 
+Server events on an `app` follow the same decision as the browser:
+
+- The consent module writes the visitor's answer, never the region default, into a first-party preference cookie: host-only, `Path=/`, `SameSite=Lax` (it has to reach the OAuth callback), and `Secure` on https. The server re-runs the browser's own gate on that answer plus the request's country and GPC or DNT headers, so a moved visitor or a newly sent signal is never stale.
+- A request without an answer carries no identity.
+- An event with no visitor request, such as a payment webhook, takes the answer recorded when the visitor started the action (pleiad and wessley carry it in the checkout session's metadata), or the account's stored answer (Beneath).
+- Allowed: identified, as before. Refused or unknown: sent anonymously, as posthog-js counts a refusal. That means a one-off id, `$process_person_profile: false`, no session or URL, and only properties on a per-event allowlist. A provider event id that only deduplicates retries is kept.
+
 ## Configuration
 
 Client (`posthog-js`):
